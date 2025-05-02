@@ -1,0 +1,35 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+bin/
+lib/
+lib64/
+sdist/
+develop-eggs/
+man/
+share/python-wheels/
+*.manifest
+*.spec
+
+# Environment variables
+.env
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# Temporary files (adjust if you use different names/locations)
+temp_image.*
+temp_audio.*
+*.log
+
+# THIS IS A GENERATED FILE lmao

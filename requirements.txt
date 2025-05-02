@@ -1,0 +1,24 @@
+google-genai
+python-dotenv
+Pillow
+
+# platform specific :: 
+
+# For RPi/Desktop TTS (Text-to-Speech)
+# pyttsx3
+
+# if in linux/desktop/rpi
+# opencv-python # for webcam
+# opencv-python-headless # for headless systems
+
+
+#Linux fallback on TTS
+# espeak
+# espeak-ng
+
+# For RPi/Desktop STT (Speech-to-Text)
+# SpeechRecognition
+# PyAudio # Required by SpeechRecognition for microphone input on many systems
+
+# For Android
+# Termux API should do fine
