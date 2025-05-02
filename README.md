@@ -18,11 +18,11 @@ Orka (Orchestrator Kernel for Agents) provides a flexible infrastructure for:
 
 ## TODO
 
-- [] Finish V feature. ( Voice to Voice/Text as of now just TTS/STT is working )
-- [] Implement P,T together ( photo and TTS/STT both simul)
-- [] Agentic Framework rather than it being Roastty.
-- [] Add detailed faliures for what can happen in android/rpi.
-
+- [ ] Finish V feature. ( Voice to Voice/Text as of now just TTS/STT is working )
+- [ ] Implement P,T together ( photo and TTS/STT both simul)
+- [ ] Agentic Framework rather than it being Roastty.
+- [ ] Add detailed faliures for what can happen in android/rpi.
+- [ ] add vnc and streaming for phones soon
 
 ## Getting Started
 
