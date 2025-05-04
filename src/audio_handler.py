@@ -17,6 +17,15 @@ except ImportError:
         "SpeechRecognition library not found. RPi/Desktop STT will not work unless installed."
     )
     sr = None  # type: ignore
+try:
+    import pyaudio  # noqa: F401
+    logging.debug("PyAudio library found.")
+    pyaudio_available = True
+except ImportError:
+    # Don't log error here, only if STT is attempted on relevant platform
+    pyaudio_available = False
+    logging.debug("PyAudio library not found. Microphone input might require it on Linux/RPi.")
+
 
 
 # TTS 
@@ -135,21 +144,31 @@ def _speak_linux_fallback(text):
     return False
 
 
-def speak(text):
+def speak(text, agent_name="Agent"):
     """Speaks the given text using the appropriate platform method."""
+    if not text:
+        logging.warning("Speak function called with empty text.")
+        return
+
     success = False
+    logging.debug(f"Speak request for platform '{config.PLATFORM}': '{text[:50]}...'")
+
     if config.PLATFORM == "termux":
         success = _speak_termux(text)
     elif config.PLATFORM in ["rpi", "linux", "macos", "windows"]:
         if pyttsx3 is not None:
             success = _speak_rpi_desktop(text)
-        elif config.PLATFORM == "linux":
+        if not success and config.PLATFORM == "linux":
+            logging.info("pyttsx3 failed or unavailable, trying Linux command fallback...")
             success = _speak_linux_fallback(text)
     else:
         logging.warning(f"TTS not implemented for platform: {config.PLATFORM}")
 
+    # Fallback to printing if all methods failed
     if not success:
-        print(f"\n[{config.BOT_NAME} (TTS Fallback)]: {text}\n")  # Fallback to printing
+        # Use agent_name in fallback print
+        print(f"\n[{agent_name} (TTS Fallback)]: {text}\n")
+        logging.info("TTS failed, fell back to printing text.")
 
 
 
@@ -261,56 +280,34 @@ def _listen_rpi_desktop():
     #     return None
 
 
-def listen():
+def listen(agent_name="Agent"):
     """Listens for audio input using the appropriate platform method."""
     recognized_text = None
+    logging.debug(f"Listen request for platform '{config.PLATFORM}'")
+
     if config.PLATFORM == "termux":
         recognized_text = _listen_termux()
     elif config.PLATFORM in ["rpi", "linux", "macos", "windows"]:
-        # Check if prerequisites are met
-        if sr is None:
-            logging.warning(
-                "SpeechRecognition library needed for STT on this platform but not installed."
-            )
-        else:
-            try:
-                # Check if PyAudio is installed if not on macOS/Windows where it might not be needed for sr
-                import pyaudio  # This import attempt checks availability
-                # doesn't seem to work yet, it's on todo
-                # If we're on the first run and Linux/RPi, offer to show available devices
-                if config.PLATFORM in ["linux", "rpi"] and not hasattr(
-                    listen, "device_checked"
-                ):
-                    listen.device_checked = True
-                    print("\nAvailable microphone devices:")
-                    mic_list = sr.Microphone.list_microphone_names()
-                    for idx, name in enumerate(mic_list):
-                        print(f"  {idx}: {name}")
-                    device_idx = input(
-                        "Enter device number to use (or press Enter for default): "
-                    ).strip()
-                    if (
-                        device_idx
-                        and device_idx.isdigit()
-                        and 0 <= int(device_idx) < len(mic_list)
-                    ):
-                        config.MIC_DEVICE_INDEX = int(device_idx)
-                        print(f"Using microphone: {mic_list[int(device_idx)]}")
-
-                recognized_text = _listen_rpi_desktop()
-            except Exception as e:
-                logging.error(f"Error during STT setup/execution: {e} , most probably PyAudio not installed")
-    if recognized_text:
-        return (
-            recognized_text.lower()
-        )  # Return lowercased text for easier command checking
+        recognized_text = _listen_rpi_desktop()
     else:
-        # Fallback or if STT is not supported/functional
+        logging.warning(f"STT not implemented for platform: {config.PLATFORM}")
+        print(f"Speech input not supported on this platform ({config.PLATFORM}).")
+
+    # Fallback to Text Input
+    if recognized_text is None:
         logging.info("STT failed or not supported, falling back to text input.")
         try:
-            user_input = input(f"[{config.BOT_NAME} waiting] You: ")
-            return user_input.lower()
-        except EOFError:  # Handle Ctrl+D
-            return "quit"
-        except Exception as e:
-            logging.error(f"Error during STT setup/execution: {e}")
+            # Use agent_name in the prompt
+            user_input = input(f"[{agent_name} waiting] You: ")
+            return user_input.strip().lower() # Return lowercased and stripped
+        except EOFError:
+            logging.info("EOF detected during text input.")
+            return "quit" # Treat EOF as quit
+        except KeyboardInterrupt:
+             logging.info("KeyboardInterrupt detected during text input.")
+             raise # Re-raise to be caught by main loop
+        except Exception as input_e:
+             logging.exception(f"Error during text input fallback: {input_e}")
+             return None # Indicate input failure
+
+    return recognized_text.lower() # Return successfully recognized text (lowercased)

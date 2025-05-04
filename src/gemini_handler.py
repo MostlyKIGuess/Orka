@@ -24,29 +24,24 @@ except Exception as e:
     raise
 
 
-def get_roast_from_image(image_path):
+def get_response_from_image(image_path, persona):
     """
-    Analyzes an image using Gemini Vision and generates a roast.
+    Analyzes an image using Gemini Vision based on the provided persona.
 
     Args:
         image_path (str): The path to the image file.
+        persona (dict): The persona dictionary defining behavior.
 
     Returns:
-        str: The generated roast text, or an error message.
+        str: The generated text response, or an error message.
     """
-    logging.info(f"Generating roast for image: {image_path}")
+    logging.info(f"Generating image response for: {image_path} using persona: {persona['name']}")
     try:
         img = Image.open(image_path)
-        prompt = (
-            "You are Roastyy, a witty and sarcastic AI assistant. "
-            "Your task is to analyze the provided image and deliver a short, funny, "
-            "and SFW (safe-for-work) roast based on its content. "
-            "Keep it light-hearted and clever. Do not be overly mean or offensive. "
-            "Focus on observable details in the image for your roast."
-            "\n\nRoast this image:"
-        )
+        # Use the persona's vision prompt template
+        prompt = persona.get("vision_prompt_template", "Describe this image.")
 
-        # Use the new API format for generation
+        # Use the API format for generation
         response = client.models.generate_content(
             model=vision_model_name, contents=[prompt, img]
         )
@@ -54,43 +49,51 @@ def get_roast_from_image(image_path):
         # Handle potential blocks or empty responses
         if hasattr(response, "candidates") and not response.candidates:
             logging.warning("Gemini response has no candidates (possibly blocked).")
-            return "I looked, but I'm speechless... and not in a good way. Couldn't come up with a roast for that."
+            return f"I looked, but {persona['name']} is speechless. Couldn't generate a response."
 
         # Check if response has text
         if not hasattr(response, "text") or not response.text:
             logging.warning("Gemini response was blocked or empty.")
-            return "My circuits fizzled trying to process that. Try a different image maybe?"
+            return f"My analysis using {persona['name']} was blocked or couldn't generate content."
 
-        roast = response.text.strip()
-        logging.info(f"Generated roast: {roast}")
-        return roast
+        response_text = response.text.strip()
+        logging.info(f"Generated image response: {response_text}")
+        return response_text
 
     except FileNotFoundError:
         logging.error(f"Image file not found at path: {image_path}")
-        return "I can't roast what I can't see! Image file not found."
+        return "I can't process what I can't see! Image file not found."
     except Exception as e:
-        logging.error(f"An error occurred during image roasting: {e}")
-        return f"Ouch! Something went wrong on my end trying to roast that image ({type(e).__name__})."
+        logging.error(f"An error occurred during image processing: {e}")
+        return f"Ouch! Something went wrong on my end processing that image ({type(e).__name__})."
 
 
-def start_chat_session():
-    """Starts a new chat session with the text model."""
-    logging.info("Starting new chat session.")
+def start_chat_session(persona):
+    """
+    Starts a new chat session with the text model using the specified persona.
+    
+    Args:
+        persona (dict): The persona dictionary containing system_instruction.
+        
+    Returns:
+        object: Chat session object.
+    """
+    logging.info(f"Starting new chat session with persona: {persona['name']}")
     try:
-        # System instruction helps set the persona consistently
-        system_instruction = (
-            "You are Roastyy, a witty and sarcastic AI assistant specializing in light-hearted roasts. "
-            "Engage in conversation, be funny, slightly sarcastic, but always SFW (safe-for-work). "
-            "Respond to user input with witty remarks or follow-up roasts. Keep responses relatively concise."
-        )
+        # Get the system instruction from the persona
+        system_instruction = persona.get("system_instruction", "You are a helpful assistant.")
 
-        # Use the new API format for chat creation
+        # Use the API format for chat creation
         chat = client.chats.create(
             model=text_model_name,
             config=genai.types.GenerateContentConfig(
                 system_instruction=system_instruction
             ),
         )
+        
+        # Store persona name on chat object for reference
+        chat.persona_name = persona.get('name')
+        
         return chat
 
     except Exception as e:
@@ -98,7 +101,7 @@ def start_chat_session():
         raise
 
 
-def get_reply_from_text(chat_session, user_input):
+def get_chat_reply(chat_session, user_input):
     """
     Gets a conversational reply from the Gemini text model within a chat session.
 
@@ -116,7 +119,7 @@ def get_reply_from_text(chat_session, user_input):
         # Check if response has text
         if not hasattr(response, "text") or not response.text:
             logging.warning("Gemini chat response was blocked or empty.")
-            return "My wit seems to have short-circuited. I got nothing."
+            return "I'm not sure how to respond to that. Let's try something else."
 
         reply = response.text.strip()
         logging.info(f"Generated reply: {reply}")
@@ -124,5 +127,43 @@ def get_reply_from_text(chat_session, user_input):
     except Exception as e:
         logging.error(f"An error occurred during text reply generation: {e}")
         return (
-            f"Yikes! My circuits sparked on that reply ({type(e).__name__}). Try again?"
+            f"Sorry, I encountered an error ({type(e).__name__}). Can we try again?"
         )
+
+
+def get_chat_history(chat_session):
+    """
+    Retrieves the chat history from a chat session.
+    
+    Args:
+        chat_session: An active chat session object.
+        
+    Returns:
+        list: The chat history or empty list if not available.
+    """
+    try:
+        if hasattr(chat_session, 'history'):
+            return chat_session.history
+        logging.warning("Chat session doesn't have a history attribute.")
+        return []
+    except Exception as e:
+        logging.error(f"Error retrieving chat history: {e}")
+        return []
+
+
+# Keep these for backward compatibility, though they're deprecated
+def get_roast_from_image(image_path):
+    """
+    Legacy function - use get_response_from_image with persona instead.
+    """
+    from src.persona import ROASTYY
+    logging.warning("Using deprecated get_roast_from_image function. Use get_response_from_image instead.")
+    return get_response_from_image(image_path, ROASTYY)
+
+
+def get_reply_from_text(chat_session, user_input):
+    """
+    Legacy function - use get_chat_reply instead.
+    """
+    logging.warning("Using deprecated get_reply_from_text function. Use get_chat_reply instead.")
+    return get_chat_reply(chat_session, user_input)
