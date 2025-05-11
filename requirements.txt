@@ -1,6 +1,11 @@
 google-genai
 python-dotenv
 Pillow
+fastapi
+uvicorn
+websockets
+opencv-python
+pydantic
 
 # platform specific :: 
 

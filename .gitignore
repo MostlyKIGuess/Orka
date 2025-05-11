@@ -33,3 +33,7 @@ temp_audio.*
 *.log
 
 # THIS IS A GENERATED FILE lmao
+
+output_data_fastapi/
+output_data/
+
