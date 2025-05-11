@@ -1,0 +1,396 @@
+{% extends "base.html" %}
+
+{% block title %}Client: {{ client.name }} - Remote Control Server{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', path='css/stream.css') }}">
+{% endblock %}
+{% block content %}
+<div class="client-details">
+    <div class="header">
+        <h1>Client: {{ client.name }}</h1>
+        <a href="/dashboard" class="back-button">Back to Dashboard</a>
+    </div>
+    
+    <div class="client-info card">
+        <div class="info-row">
+            <label>Client ID:</label>
+            <span>{{ client.client_id }}</span>
+        </div>
+        <div class="info-row">
+            <label>Platform:</label>
+            <span>{{ client.platform }}</span>
+        </div>
+        <div class="info-row">
+            <label>Connected since:</label>
+            <span id="connected-since">{{ client.registration_time }}</span>
+        </div>
+        <div class="info-row">
+            <label>Capabilities:</label>
+            <div class="capabilities">
+                {% for capability in client.capabilities %}
+                <span class="badge">{{ capability }}</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>Control Panel</h2>
+        
+        {% if "speak_text" in client.capabilities %}
+        <div class="control-group">
+            <h3>Text to Speech</h3>
+            <div class="control-inputs">
+                <textarea id="text-to-speak" placeholder="Enter text to speak..."></textarea>
+                <input type="text" id="agent-name" placeholder="Agent name (optional)" value="Server">
+                <button id="speak-button" onclick="speakText('{{ client.client_id }}')">Speak Text</button>
+            </div>
+            <div id="speak-result" class="result-area"></div>
+        </div>
+        {% endif %}
+        
+        {% if "capture_image" in client.capabilities %}
+        <div class="control-group">
+            <h3>Capture Image</h3>
+            <div class="control-inputs">
+                <button id="capture-button" onclick="captureImage('{{ client.client_id }}')">Take Photo</button>
+            </div>
+            <div id="capture-result" class="result-area">
+                <div id="image-container"></div>
+            </div>
+        </div>
+        {% endif %}
+        
+{% if "stream_video" in client.capabilities %}
+<div class="control-group">
+    <h3>Video Streaming</h3>
+    <div class="control-inputs">
+        <select id="stream-quality">
+            <option value="10">Low (10 FPS)</option>
+            <option value="15" selected>Medium (15 FPS)</option>
+            <option value="30">High (30 FPS)</option>
+        </select>
+        <button id="stream-button" onclick="startStream('{{ client.client_id }}')">Start Stream</button>
+    </div>
+    <div id="streams-container">
+        {% for stream_id, stream_info in client.active_streams.items() %}
+        <div class="stream-item">
+            <span>{{ stream_id }}</span>
+            <div class="stream-controls">
+                <a href="/stream/{{ client.client_id }}/{{ stream_id }}" class="button">View</a>
+                <button onclick="stopStream('{{ client.client_id }}', '{{ stream_id }}')" class="stop-stream-btn">Stop Stream</button>
+                
+                {% if stream_info.is_recording %}
+                <button onclick="toggleRecording('{{ stream_id }}', 'off')" class="recording-btn active">Stop Recording</button>
+                {% else %}
+                <button onclick="toggleRecording('{{ stream_id }}', 'on')" class="recording-btn">Start Recording</button>
+                {% endif %}
+                
+                {% if stream_info.slam_enabled %}
+                <button onclick="toggleSLAM('{{ stream_id }}', false)" class="slam-btn active">Disable SLAM</button>
+                <a href="/stream/{{ client.client_id }}/{{ stream_id }}?slam=true" class="button recording-btn">View SLAM</a>
+                {% else %}
+                <button onclick="toggleSLAM('{{ stream_id }}', true)" class="slam-btn">Enable SLAM</button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+        {% if client.active_streams %}
+        <div class="active-streams">
+            <h3>Active Streams</h3>
+            <div class="streams-container">
+                {% for stream_id, stream_info in client.active_streams.items() %}
+                <div class="stream-item">
+                    <span>{{ stream_id }}</span>
+                    <div class="stream-controls">
+                        <a href="/stream/{{ client.client_id }}/{{ stream_id }}" class="button">View</a>
+                        <button onclick="stopStream('{{ client.client_id }}', '{{ stream_id }}')" class="stop-stream-btn">Stop Stream</button>
+                        
+                        {% if stream_info.is_recording %}
+                        <button onclick="toggleRecording('{{ stream_id }}', 'off')" class="recording-btn active">Stop Recording</button>
+                        {% else %}
+                        <button onclick="toggleRecording('{{ stream_id }}', 'on')" class="recording-btn">Start Recording</button>
+                        {% endif %}
+                        
+                        {% if stream_info.slam_enabled %}
+                        <button onclick="toggleSLAM('{{ stream_id }}', false)" class="slam-btn active">Disable SLAM</button>
+                        <a href="/stream/{{ client.client_id }}/{{ stream_id }}?slam=true" class="button recording-btn">View SLAM</a>
+                        {% else %}
+                        <button onclick="toggleSLAM('{{ stream_id }}', true)" class="slam-btn">Enable SLAM</button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <!-- Add this section after the control panel card (around line 98) -->
+<div class="card">
+    <h2>Available Commands</h2>
+    <p class="command-info">These are all the commands that can be sent to clients based on their capabilities.</p>
+    
+    <table class="commands-table">
+        <thead>
+            <tr>
+                <th>Command</th>
+                <th>Description</th>
+                <th>Parameters</th>
+                <th>Required Capability</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="command-row {% if 'speak_text' not in client.capabilities %}disabled{% endif %}">
+                <td><code>speak_text</code></td>
+                <td>Make client speak text using TTS</td>
+                <td>
+                    <ul>
+                        <li><strong>text</strong>: Text to be spoken (required)</li>
+                        <li><strong>agent_name</strong>: Name of the speaking agent (optional)</li>
+                    </ul>
+                </td>
+                <td><span class="badge">speak_text</span></td>
+            </tr>
+            <tr class="command-row {% if 'capture_image' not in client.capabilities %}disabled{% endif %}">
+                <td><code>capture_image</code></td>
+                <td>Take a photo from client's camera</td>
+                <td>
+                    <ul>
+                        <li><em>No parameters required</em></li>
+                    </ul>
+                </td>
+                <td><span class="badge">capture_image</span></td>
+            </tr>
+            <tr class="command-row {% if 'stream_video' not in client.capabilities %}disabled{% endif %}">
+                <td><code>start_video_stream</code></td>
+                <td>Start streaming video from client</td>
+                <td>
+                    <ul>
+                        <li><strong>stream_id</strong>: Unique stream identifier (optional)</li>
+                        <li><strong>fps</strong>: Frames per second (default: 10)</li>
+                        <li><strong>quality</strong>: JPEG quality 1-100 (default: 70)</li>
+                        <li><strong>width</strong>: Stream width in pixels (default: 640)</li>
+                        <li><strong>height</strong>: Stream height in pixels (default: 480)</li>
+                    </ul>
+                </td>
+                <td><span class="badge">stream_video</span></td>
+            </tr>
+            <tr class="command-row {% if 'stream_video' not in client.capabilities %}disabled{% endif %}">
+                <td><code>stop_video_stream</code></td>
+                <td>Stop an active video stream</td>
+                <td>
+                    <ul>
+                        <li><strong>stream_id</strong>: ID of stream to stop (required)</li>
+                    </ul>
+                </td>
+                <td><span class="badge">stream_video</span></td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="api-reference">
+        <h3>HTTP API Usage</h3>
+        <p>You can also send these commands programmatically using the HTTP API:</p>
+        <pre><code>POST /clients/{client_id}/commands/{command_action}
+Content-Type: application/json
+
+{
+  "param1": "value1",
+  "param2": "value2"
+}</code></pre>
+        <p>Example: <code>POST /clients/{{ client.client_id }}/commands/speak_text</code> with JSON body <code>{"text": "Hello world"}</code></p>
+    </div>
+</div>
+
+<style>
+    .commands-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+    }
+    
+    .commands-table th, .commands-table td {
+        border: 1px solid #ddd;
+        padding: 12px;
+        text-align: left;
+    }
+    
+    .commands-table th {
+        background-color: #f5f5f5;
+        font-weight: bold;
+    }
+    
+    .commands-table tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+    
+    .commands-table tr:hover {
+        background-color: #f1f1f1;
+    }
+    
+    .commands-table code {
+        background-color: #f0f0f0;
+        padding: 2px 5px;
+        border-radius: 4px;
+        font-family: monospace;
+    }
+    
+    .command-row.disabled {
+        opacity: 0.5;
+    }
+    
+    .command-row.disabled td {
+        text-decoration: line-through;
+    }
+    
+    .command-info {
+        margin-bottom: 15px;
+        color: #666;
+    }
+    
+    .api-reference {
+        background-color: #f8f8f8;
+        padding: 15px;
+        border-radius: 5px;
+        margin-top: 20px;
+    }
+    
+    .api-reference pre {
+        background-color: #333;
+        color: #f8f8f8;
+        padding: 15px;
+        border-radius: 5px;
+        overflow-x: auto;
+    }
+    
+    .api-reference code {
+        font-family: monospace;
+    }
+</style>
+    
+    {% set slam_is_active_on_any_stream = false %}
+    {% if client.active_streams %}
+        {# Extract the 'slam_enabled' attribute from each stream_info,
+           select those that are true, and convert to a list.
+           If the list is non-empty, at least one stream has SLAM enabled. #}
+        {% set slam_enabled_flags = client.active_streams.values() | map(attribute='slam_enabled') | select | list %}
+        {% if slam_enabled_flags %}
+            {% set slam_is_active_on_any_stream = true %}
+        {% endif %}
+    {% endif %}
+
+    {% if client.active_streams and slam_is_active_on_any_stream %}
+    <div class="card">
+        <h2>SLAM Status</h2>
+        <div class="slam-status-container">
+            {% for stream_id, stream_info in client.active_streams.items() %}
+                {% if stream_info.slam_enabled %}
+                <div class="slam-stream-status">
+                    <h3>Stream: {{ stream_id }}</h3>
+                    <div class="slam-metrics">
+                        <div class="metric">
+                            <span class="metric-label">Tracking Status:</span>
+                            <span class="metric-value {{ stream_info.slam_status }}">
+                                {{ stream_info.slam_status|capitalize }}
+                            </span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Features Tracked:</span>
+                            <span class="metric-value">{{ stream_info.slam_features|default('N/A') }}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Map Points:</span>
+                            <span class="metric-value">{{ stream_info.slam_map_points|default('N/A') }}</span>
+                        </div>
+                    </div>
+                    <a href="/stream/{{ client.client_id }}/{{ stream_id }}?slam=true" class="button">View SLAM Details</a>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', path='js/client_detail.js') }}"></script>
+<script>
+    // Fix the stopStream function to actually stop the stream
+    function stopStream(clientId, streamId) {
+        if (confirm(`Are you sure you want to stop stream ${streamId}?`)) {
+            fetch(`/streams/${streamId}/record/off`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        alert(`Recording stopped for stream ${streamId}`);
+        window.location.reload();
+    })
+    .catch(error => {
+        console.error('Error toggling recording:', error);
+        alert(`Error toggling recording: ${error.message}`);
+    });
+}
+    }
+
+
+    function toggleSLAM(streamId, enable) {
+        fetch(`/api/streams/${streamId}/slam/${enable ? 'on' : 'off'}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert(`SLAM ${enable ? 'enabled' : 'disabled'} for stream ${streamId}`);
+            window.location.reload();
+        })
+        .catch(error => {
+            console.error('Error toggling SLAM:', error);
+            alert(`Error toggling SLAM: ${error.message}`);
+        });
+    }
+
+    function toggleRecording(streamId, action) {
+        fetch(`/api/streams/${streamId}/recording/${action}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert(`Recording ${action === 'on' ? 'started' : 'stopped'} for stream ${streamId}`);
+            window.location.reload();
+        })
+        .catch(error => {
+            console.error('Error toggling recording:', error);
+            alert(`Error toggling recording: ${error.message}`);
+        });
+    }
+</script>
+{% endblock %}
