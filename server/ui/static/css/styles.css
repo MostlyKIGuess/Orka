@@ -1,0 +1,598 @@
+:root {
+    --primary-color: #3498db;
+    --secondary-color: #2c3e50;
+    --accent-color: #e74c3c;
+    --success-color: #2ecc71;
+    --warning-color: #f39c12;
+    --light-bg: #f5f5f5;
+    --card-bg: #ffffff;
+    --text-color: #333333;
+    --text-light: #666666;
+    --border-color: #dddddd;
+    --recording-color: #e74c3c;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--light-bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 1rem 2rem;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+nav .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+nav ul {
+    display: flex;
+    list-style: none;
+}
+
+nav ul li {
+    margin-left: 2rem;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 0;
+    transition: all 0.3s;
+}
+
+nav ul li a:hover {
+    color: var(--primary-color);
+}
+
+main {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+footer {
+    background-color: var(--secondary-color);
+    color: white;
+    text-align: center;
+    padding: 1rem;
+    margin-top: auto;
+}
+
+/* Dashboard styles */
+.dashboard h1 {
+    margin-bottom: 2rem;
+    color: var(--secondary-color);
+}
+
+.clients-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+}
+
+.no-clients {
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.no-clients pre {
+    background: #f0f0f0;
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin-top: 1rem;
+}
+
+.badge {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+/* Client Card styles */
+.client-card {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: all 0.3s;
+}
+
+.client-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.client-header {
+    padding: 1.5rem;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.client-header h2 {
+    font-size: 1.3rem;
+    margin: 0;
+}
+
+.platform-badge {
+    background-color: rgba(255,255,255,0.2);
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+.platform-badge.linux {
+    background-color: #f39c12;
+}
+
+.platform-badge.termux {
+    background-color: #9b59b6;
+}
+
+.platform-badge.windows {
+    background-color: #3498db;
+}
+
+.platform-badge.rpi {
+    background-color: #e74c3c;
+}
+
+.client-body {
+    padding: 1.5rem;
+}
+
+.info-row {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: flex-start;
+}
+
+.info-row .label {
+    font-weight: bold;
+    color: var(--text-light);
+    min-width: 120px;
+}
+
+.capabilities .caps-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.cap-badge {
+    background-color: #f0f0f0;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+.streams-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.stream-link {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.recording-badge {
+    background-color: var(--recording-color);
+    color: white;
+    padding: 0.1rem 0.3rem;
+    border-radius: 3px;
+    font-size: 0.7rem;
+}
+
+.client-footer {
+    border-top: 1px solid var(--border-color);
+    padding: 1rem 1.5rem;
+    text-align: right;
+}
+
+.client-detail-link {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: all 0.3s;
+}
+
+.client-detail-link:hover {
+    background-color: var(--secondary-color);
+}
+
+/* Client Details page */
+.client-details .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.back-button {
+    padding: 0.5rem 1rem;
+    background-color: var(--secondary-color);
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: all 0.3s;
+}
+
+.back-button:hover {
+    background-color: var(--primary-color);
+}
+
+.card {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+}
+
+.client-info .info-row {
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.client-info .info-row:last-child {
+    border-bottom: none;
+}
+
+.client-info label {
+    font-weight: bold;
+    color: var(--text-light);
+    min-width: 150px;
+    display: inline-block;
+}
+
+.capabilities {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+/* Control panel styles */
+.control-group {
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.5rem 0;
+}
+
+.control-group:last-child {
+    border-bottom: none;
+}
+
+.control-inputs {
+    margin: 1rem 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+textarea, input {
+    padding: 0.7rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+textarea {
+    width: 100%;
+    min-height: 100px;
+    resize: vertical;
+}
+
+button {
+    padding: 0.7rem 1.2rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+button:hover {
+    background-color: var(--secondary-color);
+}
+
+select {
+    padding: 0.7rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.result-area {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    min-height: 50px;
+}
+
+#image-container {
+    max-width: 100%;
+    overflow: hidden;
+}
+
+#image-container img {
+    max-width: 100%;
+    border-radius: 4px;
+}
+
+.stream-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+}
+
+/* Stream viewer styles */
+.stream-viewer .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.stream-viewer .actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.stream-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.info-point {
+    font-size: 1.1rem;
+}
+
+.info-point span {
+    font-weight: bold;
+    color: var(--secondary-color);
+}
+
+.stream-container {
+    background-color: #222;
+    border-radius: 8px;
+    padding: 1rem;
+    height: 550px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.stream-player {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.fallback-message {
+    color: white;
+    text-align: center;
+    font-size: 1.2rem;
+    margin: 0.5rem 0;
+}
+
+#recording-info {
+    display: none;
+    padding: 1rem;
+    background-color: var(--recording-color);
+    color: white;
+    border-radius: 8px;
+    align-items: center;
+    gap: 1rem;
+    font-weight: bold;
+}
+
+#recording-info.active {
+    display: flex;
+}
+
+.recording-indicator {
+    width: 16px;
+    height: 16px;
+    background-color: white;
+    border-radius: 50%;
+    animation: blink 1.5s infinite;
+}
+
+button.recording {
+    background-color: var(--recording-color);
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 1; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    main {
+        padding: 1rem;
+    }
+    
+    .clients-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .client-details .header, .stream-viewer .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .stream-info {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+
+.stream-controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 5px;
+}
+
+.slam-btn, .recording-btn {
+    padding: 5px 10px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.3s;
+}
+
+.slam-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.slam-btn:hover {
+    background-color: #45a049;
+}
+
+.slam-btn.active {
+    background-color: #f44336;
+}
+
+.slam-btn.active:hover {
+    background-color: #d32f2f;
+}
+
+.recording-btn {
+    background-color: #2196F3;
+    color: white;
+}
+
+.recording-btn:hover {
+    background-color: #0b7dda;
+}
+
+.recording-btn.active {
+    background-color: #f44336;
+}
+
+.recording-btn.active:hover {
+    background-color: #d32f2f;
+}
+
+.view-slam-btn {
+    background-color: #9C27B0;
+    color: white;
+}
+
+.view-slam-btn:hover {
+    background-color: #7B1FA2;
+}
+
+.slam-status-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.slam-stream-status {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.slam-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.metric {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.metric-label {
+    font-size: 0.8em;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.metric-value {
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.metric-value.good {
+    color: #4CAF50;
+}
+
+.metric-value.warning {
+    color: #FF9800;
+}
+
+.metric-value.bad {
+    color: #f44336;
+}

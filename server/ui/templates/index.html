@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Remote Control Server{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <h1>Connected Clients</h1>
+    
+    <div id="clients-count">
+        {% if clients|length == 0 %}
+        <div class="no-clients">
+            <p>No clients connected. Run a client with:</p>
+            <pre>python client/main_client.py --server ws://{{request.headers.get('host')}}</pre>
+        </div>
+        {% else %}
+        <p>Total clients: <span class="badge">{{ clients|length }}</span></p>
+        {% endif %}
+    </div>
+    
+    <div class="clients-grid" id="clients-container">
+        {% for client_id, client in clients.items() %}
+            {% include "components/client_card.html" %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', path='/js/dashboard.js') }}"></script>
+{% endblock %}
