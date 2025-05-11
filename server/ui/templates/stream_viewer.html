@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Stream Viewer - {{ client.name }}{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', path='css/stream.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="stream-container">
+    <div class="stream-header">
+        <div class="stream-info">
+            <h2>Stream: {{ stream_id }}</h2>
+            <span class="status-badge {% if slam_active %}status-active{% else %}status-inactive{% endif %}">
+                SLAM {% if slam_active %}Active{% else %}Inactive{% endif %}
+            </span>
+            {% if is_recording %}
+            <span class="status-badge status-recording">Recording</span>
+            {% endif %}
+        </div>
+        
+        <div class="stream-controls">
+            {% if slam_active %}
+            <button class="btn btn-danger" onclick="toggleSLAM('{{ stream_id }}', false)">Disable SLAM</button>
+            {% else %}
+            <button class="btn btn-primary" onclick="toggleSLAM('{{ stream_id }}', true)">Enable SLAM</button>
+            {% endif %}
+            
+            {% if is_recording %}
+            <button class="btn btn-danger" onclick="toggleRecording('{{ stream_id }}', 'off')">Stop Recording</button>
+            {% else %}
+            <button class="btn btn-primary" onclick="toggleRecording('{{ stream_id }}', 'on')">Start Recording</button>
+            {% endif %}
+            
+            <a href="/client/{{ client.client_id }}" class="btn btn-primary">Back to Client</a>
+        </div>
+    </div>
+    
+    <div class="video-section">
+        <div>
+            <h3>Live Stream</h3>
+            <div class="video-view">
+                <img id="liveStream" src="/api/streams/{{ stream_id }}/live" alt="Live Stream">
+            </div>
+        </div>
+        
+        {% if slam_active %}
+        <div>
+            <h3>SLAM Visualization</h3>
+            <div class="video-view">
+                <img id="slamViz" src="/api/streams/{{ stream_id }}/slam_view" alt="SLAM Visualization">
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    {% if slam_active %}
+    <div class="map-container">
+        <h3>SLAM Map</h3>
+        <div class="map-view">
+            <img id="slamMap" src="/api/streams/{{ stream_id }}/slam_map" alt="SLAM Map">
+        </div>
+        
+        <div class="slam-status">
+            <div class="stat-card">
+                <div class="stat-title">Features Tracked</div>
+                <div id="featureCount" class="stat-value">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Trajectory Length</div>
+                <div id="trajectoryLength" class="stat-value">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Last Update</div>
+                <div id="lastUpdate" class="stat-value">-</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %} 
+<script src="{{ url_for('static', path='js/stream_viewer.js') }}"></script>
+<script>
+    // Pass stream_id and slam_active to JavaScript using the tojson filter
+    // for safe and correct serialization.
+    initializeStreamUpdates("{{ stream_id }}", "{{ slam_active }}");
+</script>
+{% endblock %}
