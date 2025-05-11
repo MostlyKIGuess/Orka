@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Remote Client Control Server{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">Remote Client Control</div>
+            <ul>
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/docs" target="_blank">API Docs</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>Remote Client Control Server &copy; <span id="current-year"></span></p>
+        <script>
+            document.getElementById('current-year').textContent = new Date().getFullYear();
+        </script>
+    </footer>
+
+    <script src="{{ url_for('static', path='/js/common.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

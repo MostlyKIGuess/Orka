@@ -1,0 +1,45 @@
+<div class="client-card" data-client-id="{{ client_id }}">
+    <div class="client-header">
+        <h2>{{ client.name }}</h2>
+        <span class="platform-badge {{ client.platform }}">{{ client.platform }}</span>
+    </div>
+    
+    <div class="client-body">
+        <div class="info-row">
+            <span class="label">Connected:</span>
+            <span class="value">{{ client.connected_since }}</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Last seen:</span>
+            <span class="value last-seen" data-seconds="{{ client.last_seen_ago_s }}">{{ client.last_seen_ago_s }}s ago</span>
+        </div>
+        <div class="info-row capabilities">
+            <span class="label">Capabilities:</span>
+            <div class="caps-container">
+                {% for capability in client.capabilities %}
+                <span class="cap-badge">{{ capability }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        
+        {% if client.active_streams %}
+        <div class="info-row">
+            <span class="label">Active streams:</span>
+            <div class="streams-container">
+                {% for stream_id in client.active_streams %}
+                <a href="/streams/{{ stream_id }}" class="stream-link">
+                    {{ stream_id }}
+                    {% if stream_id in client.streams_recording %}
+                    <span class="recording-badge">REC</span>
+                    {% endif %}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="client-footer">
+        <a href="/clients/{{ client_id }}" class="client-detail-link">Open Control Panel</a>
+    </div>
+</div>
