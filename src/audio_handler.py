@@ -1,6 +1,7 @@
 import logging
 import subprocess
-import config 
+
+import config
 
 try:
     import pyttsx3
@@ -19,16 +20,19 @@ except ImportError:
     sr = None  # type: ignore
 try:
     import pyaudio  # noqa: F401
+
     logging.debug("PyAudio library found.")
     pyaudio_available = True
 except ImportError:
     # Don't log error here, only if STT is attempted on relevant platform
     pyaudio_available = False
-    logging.debug("PyAudio library not found. Microphone input might require it on Linux/RPi.")
+    logging.debug(
+        "PyAudio library not found. Microphone input might require it on Linux/RPi."
+    )
 
 
+# TTS
 
-# TTS 
 
 def _speak_termux(text):
     """Uses Termux:API for TTS."""
@@ -97,7 +101,9 @@ def _speak_rpi_desktop(text):
             try:
                 subprocess.run(["which", "aplay"], check=True, capture_output=True)
             except subprocess.CalledProcessError:
-                logging.error("aplay command not found. Install with: sudo apt-get install alsa-utils or wtv is there in your distro")
+                logging.error(
+                    "aplay command not found. Install with: sudo apt-get install alsa-utils or wtv is there in your distro"
+                )
                 return False
 
         engine = pyttsx3.init()
@@ -159,7 +165,9 @@ def speak(text, agent_name="Agent"):
         if pyttsx3 is not None:
             success = _speak_rpi_desktop(text)
         if not success and config.PLATFORM == "linux":
-            logging.info("pyttsx3 failed or unavailable, trying Linux command fallback...")
+            logging.info(
+                "pyttsx3 failed or unavailable, trying Linux command fallback..."
+            )
             success = _speak_linux_fallback(text)
     else:
         logging.warning(f"TTS not implemented for platform: {config.PLATFORM}")
@@ -169,13 +177,6 @@ def speak(text, agent_name="Agent"):
         # Use agent_name in fallback print
         print(f"\n[{agent_name} (TTS Fallback)]: {text}\n")
         logging.info("TTS failed, fell back to printing text.")
-
-
-
-
-
-
-
 
 
 # SST
@@ -255,7 +256,7 @@ def _listen_rpi_desktop():
 
     try:
         # Recognize speech using Google Web Speech API (requires internet)
-        recognized_text = r.recognize_google(audio)
+        recognized_text = r.recognize_google(audio)  # type: ignore
         logging.info(f"Google Web Speech recognized: '{recognized_text}'")
         print(f"(Heard: {recognized_text})")  # Give user feedback
         return recognized_text
@@ -299,15 +300,15 @@ def listen(agent_name="Agent"):
         try:
             # Use agent_name in the prompt
             user_input = input(f"[{agent_name} waiting] You: ")
-            return user_input.strip().lower() # Return lowercased and stripped
+            return user_input.strip().lower()  # Return lowercased and stripped
         except EOFError:
             logging.info("EOF detected during text input.")
-            return "quit" # Treat EOF as quit
+            return "quit"  # Treat EOF as quit
         except KeyboardInterrupt:
-             logging.info("KeyboardInterrupt detected during text input.")
-             raise # Re-raise to be caught by main loop
+            logging.info("KeyboardInterrupt detected during text input.")
+            raise  # Re-raise to be caught by main loop
         except Exception as input_e:
-             logging.exception(f"Error during text input fallback: {input_e}")
-             return None # Indicate input failure
+            logging.exception(f"Error during text input fallback: {input_e}")
+            return None  # Indicate input failure
 
-    return recognized_text.lower() # Return successfully recognized text (lowercased)
+    return recognized_text.lower()  # Return successfully recognized text (lowercased)
