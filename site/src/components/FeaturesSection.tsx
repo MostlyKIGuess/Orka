@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight} from "lucide-react"; 
+import { ArrowRight } from "lucide-react"; 
 import { JSX } from "react";
 
 interface FeatureItem {
@@ -36,16 +36,16 @@ export default function FeaturesSection({ title, subtitle, features, ctaLink, ct
               className="bg-slate-800/70 p-7 rounded-xl shadow-lg hover:shadow-purple-500/30 transition-all duration-300 ease-in-out transform hover:-translate-y-1 flex flex-col"
             >
               <div className="flex items-center mb-5">
-                <div className="p-3 bg-purple-600/20 rounded-lg mr-4">
+                <div className="p-3 bg-purple-600/20 rounded-lg mr-4 flex-shrink-0">
                   {feature.icon}
                 </div>
                 <h3 className="text-2xl font-semibold text-slate-50">{feature.title}</h3>
               </div>
-              <p className="text-slate-300 text-sm mb-5 flex-grow">{feature.description}</p>
+              <p className="text-slate-300 text-sm mb-5 flex-grow leading-relaxed">{feature.description}</p>
               {feature.link && feature.linkText && (
                 <Link 
                   href={feature.link}
-                  className="mt-auto text-purple-400 hover:text-purple-300 text-sm font-medium inline-flex items-center group"
+                  className="mt-auto text-purple-400 hover:text-purple-300 text-sm font-medium inline-flex items-center group self-start"
                 >
                   {feature.linkText} <ArrowRight className="w-4 h-4 ml-1.5 transition-transform duration-200 group-hover:translate-x-1" />
                 </Link>
@@ -68,7 +68,6 @@ export default function FeaturesSection({ title, subtitle, features, ctaLink, ct
     </section>
   );
 }
-
 /*
 const exampleFeatures: FeatureItem[] = [
   {

@@ -5,7 +5,7 @@ export default function Footer() {
   return (
     <footer className="py-10 md:py-12 border-t border-slate-700/50 bg-slate-900 text-slate-400">
       <div className="container mx-auto px-6 md:px-10">
-        <div className="grid md:grid-cols-3 gap-8 items-center">
+        <div className="grid md:grid-cols-3 gap-8 items-center text-center md:text-left">
           <div className="flex items-center justify-center md:justify-start">
             <Link href="/" className="text-xl font-bold flex items-center text-slate-200 hover:text-blue-400 transition-colors">
               <Bot className="w-7 h-7 mr-2 text-blue-400" />
@@ -13,7 +13,7 @@ export default function Footer() {
             </Link>
           </div>
 
-          <div className="text-center text-sm">
+          <div className="text-sm">
             <p>&copy; {new Date().getFullYear()} Orka Project. All rights reserved.</p>
             <p className="text-xs mt-2 text-slate-500">
               Orka: Orchestrator Kernel for Agents.
@@ -30,11 +30,10 @@ export default function Footer() {
             >
               <Github className="w-6 h-6" />
             </a>
-            {/* other socials*/}
+            {/* You can add other social links here */}
           </div>
         </div>
       </div>
     </footer>
   );
 }
-

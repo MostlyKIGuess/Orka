@@ -1,8 +1,10 @@
 import { CheckSquare } from "lucide-react"; 
+import {JSX } from "react"; 
 
 interface UseCaseItem {
   name: string;
   description: string;
+  icon?: JSX.Element; // Optional icon for each use case
 }
 
 interface UseCasesSectionProps {
@@ -27,7 +29,7 @@ export default function UseCasesSection({ useCases }: UseCasesSectionProps) {
               className="bg-slate-700/60 p-7 rounded-xl shadow-lg hover:shadow-teal-500/30 transition-all duration-300 ease-in-out transform hover:-translate-y-1"
             >
               <div className="flex items-start mb-3">
-                <CheckSquare className="w-7 h-7 mr-3 text-teal-400 flex-shrink-0 mt-1" />
+                {uc.icon ? <span className="mr-3 mt-1 text-teal-400 flex-shrink-0">{uc.icon}</span> : <CheckSquare className="w-6 h-6 mr-3 text-teal-400 flex-shrink-0 mt-1" />}
                 <h3 className="text-xl font-semibold text-slate-50">{uc.name}</h3>
               </div>
               <p className="text-slate-300 text-sm leading-relaxed">{uc.description}</p>
